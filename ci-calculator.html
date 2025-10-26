@@ -430,7 +430,7 @@
                         </label>
                     </div>
                     <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                        Expected format: player, week, opponent, passing_yards, accuracy_pct, comp_pct, btt_rate, twp_rate
+                        Expected format: player, week, opponent, passing_yards, accuracy_pct, comp_pct, btt_rate, twp_rate, prop_line (optional), bet_result (optional)
                     </p>
                 </div>
 
@@ -562,6 +562,18 @@
                         <div class="stat-label">Completion %</div>
                         <div class="stat-value" id="compDisplay">--</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Over Hit Rate</div>
+                        <div class="stat-value" id="hitRate">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Prop Line Average</div>
+                        <div class="stat-value" id="avgPropLine">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Line vs Avg Yards</div>
+                        <div class="stat-value" id="lineVariance">--</div>
+                    </div>
                 </div>
 
                 <div id="chartContainer">
@@ -640,20 +652,19 @@
         }
 
         function loadSampleData() {
-            const sampleCSV = `player,week,opponent,passing_yards,accuracy_pct,comp_pct,btt_rate,twp_rate,adot,time_to_throw,ypa
-Justin Herbert,1,KC,205,62.5,62.5,5.0,3.1,8.5,2.8,6.4
-Justin Herbert,2,@LV,167,51.4,51.4,2.9,0.0,7.2,2.6,4.8
-Justin Herbert,3,DEN,237,53.8,53.8,7.7,2.6,8.1,2.7,6.1
-Justin Herbert,4,@NYG,135,45.2,45.2,0.0,0.0,6.8,2.5,4.4
-Justin Herbert,5,WAS,284,71.4,71.4,11.4,0.0,9.2,2.9,8.1
-Justin Herbert,6,@MIA,195,56.3,56.3,3.1,6.3,7.5,2.7,6.1
-Justin Herbert,7,IND,315,62.8,62.8,9.3,0.0,8.8,2.8,7.3
-Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
+            const sampleCSV = `player,week,opponent,passing_yards,accuracy_pct,comp_pct,btt_rate,twp_rate,prop_line,bet_result
+Baker Mayfield,1,@ATL,167,53.1,53.1,6.1,10.5,244.5,Under
+Baker Mayfield,2,@HOU,215,65.8,65.8,6.8,3.8,235.5,Under
+Baker Mayfield,3,NYJ,233,65.5,65.5,8.8,2.5,236.5,Under
+Baker Mayfield,4,PHI,289,55.0,55.0,7.0,4.3,227.5,Over
+Baker Mayfield,5,@SEA,379,87.9,87.9,8.3,0.0,229.5,Over
+Baker Mayfield,6,SF,256,73.9,73.9,4.2,0.0,239.5,Over
+Baker Mayfield,7,@DET,228,56.0,56.0,3.2,3.5,238.5,Under`;
 
             parseCSV(sampleCSV);
-            document.getElementById('qbSelect').value = 'Justin Herbert';
+            document.getElementById('qbSelect').value = 'Baker Mayfield';
             loadQBData();
-            document.getElementById('fileName').textContent = '📄 Sample Data Loaded (Justin Herbert)';
+            document.getElementById('fileName').textContent = '📄 Sample Data Loaded (Baker Mayfield with Prop Lines)';
         }
 
         function addGame() {
@@ -724,7 +735,11 @@ Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
             const bttRate = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.btt_rate || 0), 0) / dataToAnalyze.length;
             const twpRate = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.twp_rate || 0), 0) / dataToAnalyze.length;
 
-            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine);
+            // Extract prop line data if available
+            const propLines = dataToAnalyze.map(g => parseFloat(g.prop_line) || null).filter(p => p !== null);
+            const betResults = dataToAnalyze.map(g => g.bet_result || null).filter(r => r !== null);
+
+            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine, propLines, betResults);
             displayResults(result, dataToAnalyze[0].player, dataToAnalyze, bettingLine);
         }
 
@@ -747,16 +762,28 @@ Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
             }
 
             const yards = games.map(g => g.yards);
-            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine);
+            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine, [], []);
             displayResults(result, qbName, games, bettingLine);
         }
 
-        function performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine) {
+        function performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine, propLines = [], betResults = []) {
             // Calculate variance metrics
             const mean = yards.reduce((a, b) => a + b, 0) / yards.length;
             const variance = yards.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / yards.length;
             const stdDev = Math.sqrt(variance);
             const cv = (stdDev / mean) * 100; // Coefficient of Variation
+
+            // Calculate prop line metrics if available
+            let hitRate = null;
+            let avgPropLine = null;
+            let lineVariance = null;
+
+            if (propLines.length > 0 && betResults.length > 0) {
+                const overCount = betResults.filter(r => r === 'Over').length;
+                hitRate = (overCount / betResults.length) * 100;
+                avgPropLine = propLines.reduce((a, b) => a + b, 0) / propLines.length;
+                lineVariance = mean - avgPropLine;
+            }
 
             // CI Formula: Base score minus variance penalty plus performance bonuses
             let ciScore = 100 - cv; // Start with base consistency score
@@ -824,7 +851,10 @@ Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
                 recommendation,
                 betAction,
                 betClass,
-                yards
+                yards,
+                hitRate: hitRate !== null ? hitRate.toFixed(1) : null,
+                avgPropLine: avgPropLine !== null ? avgPropLine.toFixed(1) : null,
+                lineVariance: lineVariance !== null ? lineVariance.toFixed(1) : null
             };
         }
 
@@ -845,6 +875,17 @@ Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
             document.getElementById('gamesCount').textContent = result.gamesCount;
             document.getElementById('accuracyDisplay').textContent = result.accuracy + '%';
             document.getElementById('compDisplay').textContent = result.completion + '%';
+
+            // Display prop line metrics if available
+            if (result.hitRate !== null) {
+                document.getElementById('hitRate').textContent = result.hitRate + '%';
+                document.getElementById('avgPropLine').textContent = result.avgPropLine;
+                document.getElementById('lineVariance').textContent = (result.lineVariance >= 0 ? '+' : '') + result.lineVariance;
+            } else {
+                document.getElementById('hitRate').textContent = 'N/A';
+                document.getElementById('avgPropLine').textContent = 'N/A';
+                document.getElementById('lineVariance').textContent = 'N/A';
+            }
 
             document.getElementById('recommendationText').innerHTML = `<p>${result.recommendation}</p>`;
             document.getElementById('betAction').textContent = result.betAction;
@@ -891,7 +932,21 @@ Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
                 }
             ];
 
-            if (bettingLine) {
+            // Check if prop_line data exists in gamesData
+            const hasPropLines = gamesData.some(g => g.prop_line);
+            if (hasPropLines) {
+                const propLineData = gamesData.map(g => parseFloat(g.prop_line) || null);
+                datasets.push({
+                    label: 'Prop Line (Per Game)',
+                    data: propLineData,
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    borderWidth: 2,
+                    borderDash: [10, 5],
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                    fill: false
+                });
+            } else if (bettingLine) {
                 datasets.push({
                     label: 'Betting Line',
                     data: Array(yards.length).fill(bettingLine),

@@ -1,0 +1,8 @@
+player,week,opponent,passing_yards,accuracy_pct,comp_pct,btt_rate,twp_rate,prop_line,bet_result
+Baker Mayfield,1,@ATL,167,53.1,53.1,6.1,10.5,244.5,Under
+Baker Mayfield,2,@HOU,215,65.8,65.8,6.8,3.8,235.5,Under
+Baker Mayfield,3,NYJ,233,65.5,65.5,8.8,2.5,236.5,Under
+Baker Mayfield,4,PHI,289,55.0,55.0,7.0,4.3,227.5,Over
+Baker Mayfield,5,@SEA,379,87.9,87.9,8.3,0.0,229.5,Over
+Baker Mayfield,6,SF,256,73.9,73.9,4.2,0.0,239.5,Over
+Baker Mayfield,7,@DET,228,56.0,56.0,3.2,3.5,238.5,Under

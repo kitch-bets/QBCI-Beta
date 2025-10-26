@@ -1,0 +1,9 @@
+player,week,opponent,passing_yards,accuracy_pct,comp_pct,btt_rate,twp_rate,prop_line,bet_result
+Justin Herbert,1,KC,205,62.5,62.5,5.0,3.1,265.5,Under
+Justin Herbert,2,@LV,167,51.4,51.4,2.9,0.0,255.5,Under
+Justin Herbert,3,DEN,237,53.8,53.8,7.7,2.6,260.5,Under
+Justin Herbert,4,@NYG,135,45.2,45.2,0.0,0.0,250.5,Under
+Justin Herbert,5,WAS,284,71.4,71.4,11.4,0.0,258.5,Over
+Justin Herbert,6,@MIA,195,56.3,56.3,3.1,6.3,262.5,Under
+Justin Herbert,7,IND,315,62.8,62.8,9.3,0.0,268.5,Over
+Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,275.5,Over
