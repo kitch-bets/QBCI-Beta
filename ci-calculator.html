@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QBCI™ Calculator - LSX Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0e27;
+            --secondary-bg: #141b3d;
+            --card-bg: #1a2145;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #a8b2d1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, #0f1433 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 1rem;
+            background: var(--secondary-bg);
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--card-bg);
+            box-shadow: none;
+        }
+
+        .game-entry {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr auto;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            align-items: end;
+        }
+
+        .game-entry input {
+            margin: 0;
+        }
+
+        .remove-btn {
+            padding: 0.75rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+
+        #gamesList {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .results-section {
+            grid-column: 1 / -1;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .ci-score-display {
+            background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border);
+        }
+
+        .ci-score-value {
+            font-size: 5rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .ci-score-value.low-risk {
+            color: var(--success);
+        }
+
+        .ci-score-value.moderate-risk {
+            color: var(--warning);
+        }
+
+        .ci-score-value.high-risk {
+            color: var(--danger);
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .risk-badge.low-risk {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .risk-badge.moderate-risk {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .risk-badge.high-risk {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--secondary-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .recommendation {
+            background: var(--secondary-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            margin-top: 2rem;
+        }
+
+        .recommendation h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .recommendation p {
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .bet-action {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .bet-action.bet-over {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .bet-action.bet-under {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .bet-action.no-bet {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .bet-action.caution {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        #chartContainer {
+            background: var(--secondary-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-entry {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>QBCI™ Calculator</h1>
+            <p class="subtitle">Quarterback Consistency Index | LSX Analytics</p>
+        </header>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('csv-import')">CSV Import</button>
+            <button class="tab-btn" onclick="switchTab('manual-entry')">Manual Entry</button>
+        </div>
+
+        <!-- CSV Import Tab -->
+        <div id="csv-import" class="tab-content active">
+            <div class="card">
+                <h2>Import QB Data</h2>
+                <div class="input-group">
+                    <label>Upload CSV File</label>
+                    <div class="file-upload">
+                        <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
+                        <label for="csvFile" class="file-upload-label">
+                            <span id="fileName">📁 Click to upload CSV or drag file here</span>
+                        </label>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                        Expected format: player, week, opponent, passing_yards, accuracy_pct, comp_pct, btt_rate, twp_rate
+                    </p>
+                </div>
+
+                <div class="input-group">
+                    <label>Select Quarterback</label>
+                    <select id="qbSelect" onchange="loadQBData()">
+                        <option value="">-- Upload CSV first --</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data (Justin Herbert)</button>
+            </div>
+
+            <div class="card">
+                <h2>Analysis Settings</h2>
+                <div class="input-group">
+                    <label>Betting Line (Passing Yards)</label>
+                    <input type="number" id="bettingLine" placeholder="e.g., 265.5" step="0.5">
+                </div>
+
+                <div class="input-group">
+                    <label>Analysis Window</label>
+                    <select id="analysisWindow">
+                        <option value="all">All Games</option>
+                        <option value="5">Last 5 Games</option>
+                        <option value="10">Last 10 Games</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="calculateCI()">Calculate CI Score</button>
+            </div>
+        </div>
+
+        <!-- Manual Entry Tab -->
+        <div id="manual-entry" class="tab-content">
+            <div class="main-grid">
+                <div class="card">
+                    <h2>QB Metrics</h2>
+                    <div class="input-group">
+                        <label>Quarterback Name</label>
+                        <input type="text" id="qbName" placeholder="e.g., Justin Herbert">
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="input-group">
+                            <label>Accuracy % (PFF)</label>
+                            <input type="number" id="accuracyPct" placeholder="e.g., 62.5" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Completion %</label>
+                            <input type="number" id="compPct" placeholder="e.g., 65.0" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label>BTT Rate %</label>
+                            <input type="number" id="bttRate" placeholder="e.g., 5.5" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label>TWP Rate %</label>
+                            <input type="number" id="twpRate" placeholder="e.g., 2.0" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Betting Line (Passing Yards)</label>
+                        <input type="number" id="bettingLineManual" placeholder="e.g., 265.5" step="0.5">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Game-by-Game Data</h2>
+                    <div id="gamesList"></div>
+
+                    <div class="game-entry" id="newGameEntry">
+                        <div class="input-group" style="margin: 0;">
+                            <label>Week</label>
+                            <input type="number" id="newWeek" placeholder="1" min="1" max="18">
+                        </div>
+                        <div class="input-group" style="margin: 0;">
+                            <label>Opponent</label>
+                            <input type="text" id="newOpponent" placeholder="e.g., KC">
+                        </div>
+                        <div class="input-group" style="margin: 0;">
+                            <label>Pass Yards</label>
+                            <input type="number" id="newYards" placeholder="250">
+                        </div>
+                        <button class="btn" onclick="addGame()" style="width: auto; margin: 0; margin-top: 1.5rem;">Add</button>
+                    </div>
+
+                    <button class="btn" onclick="calculateCIManual()" style="margin-top: 1.5rem;">Calculate CI Score</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="card">
+                <div class="ci-score-display">
+                    <h2>Consistency Index Score</h2>
+                    <div class="ci-score-value" id="ciScoreValue">--</div>
+                    <div class="risk-badge" id="riskBadge">--</div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);" id="qbNameDisplay"></p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Passing Yards</div>
+                        <div class="stat-value" id="avgYards">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Standard Deviation</div>
+                        <div class="stat-value" id="stdDev">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Coefficient of Variation</div>
+                        <div class="stat-value" id="cv">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Games Analyzed</div>
+                        <div class="stat-value" id="gamesCount">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Accuracy %</div>
+                        <div class="stat-value" id="accuracyDisplay">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completion %</div>
+                        <div class="stat-value" id="compDisplay">--</div>
+                    </div>
+                </div>
+
+                <div id="chartContainer">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+
+                <div class="recommendation">
+                    <h3>Betting Recommendation</h3>
+                    <div id="recommendationText"></div>
+                    <div class="bet-action" id="betAction"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let csvData = [];
+        let currentQBData = [];
+        let games = [];
+        let chart = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = `📄 ${file.name}`;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    parseCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                csvData.push(row);
+            }
+
+            // Populate QB dropdown
+            const qbs = [...new Set(csvData.map(row => row.player))];
+            const select = document.getElementById('qbSelect');
+            select.innerHTML = '<option value="">-- Select Quarterback --</option>';
+            qbs.forEach(qb => {
+                const option = document.createElement('option');
+                option.value = qb;
+                option.textContent = qb;
+                select.appendChild(option);
+            });
+        }
+
+        function loadQBData() {
+            const selectedQB = document.getElementById('qbSelect').value;
+            if (!selectedQB) return;
+
+            currentQBData = csvData.filter(row => row.player === selectedQB);
+            console.log(`Loaded ${currentQBData.length} games for ${selectedQB}`);
+        }
+
+        function loadSampleData() {
+            const sampleCSV = `player,week,opponent,passing_yards,accuracy_pct,comp_pct,btt_rate,twp_rate,adot,time_to_throw,ypa
+Justin Herbert,1,KC,205,62.5,62.5,5.0,3.1,8.5,2.8,6.4
+Justin Herbert,2,@LV,167,51.4,51.4,2.9,0.0,7.2,2.6,4.8
+Justin Herbert,3,DEN,237,53.8,53.8,7.7,2.6,8.1,2.7,6.1
+Justin Herbert,4,@NYG,135,45.2,45.2,0.0,0.0,6.8,2.5,4.4
+Justin Herbert,5,WAS,284,71.4,71.4,11.4,0.0,9.2,2.9,8.1
+Justin Herbert,6,@MIA,195,56.3,56.3,3.1,6.3,7.5,2.7,6.1
+Justin Herbert,7,IND,315,62.8,62.8,9.3,0.0,8.8,2.8,7.3
+Justin Herbert,8,MIN,405,76.2,76.2,14.3,0.0,10.1,3.0,9.6`;
+
+            parseCSV(sampleCSV);
+            document.getElementById('qbSelect').value = 'Justin Herbert';
+            loadQBData();
+            document.getElementById('fileName').textContent = '📄 Sample Data Loaded (Justin Herbert)';
+        }
+
+        function addGame() {
+            const week = document.getElementById('newWeek').value;
+            const opponent = document.getElementById('newOpponent').value;
+            const yards = document.getElementById('newYards').value;
+
+            if (!week || !opponent || !yards) {
+                alert('Please fill in all game fields');
+                return;
+            }
+
+            games.push({ week: parseInt(week), opponent, yards: parseInt(yards) });
+            updateGamesList();
+
+            // Clear inputs
+            document.getElementById('newWeek').value = '';
+            document.getElementById('newOpponent').value = '';
+            document.getElementById('newYards').value = '';
+        }
+
+        function removeGame(index) {
+            games.splice(index, 1);
+            updateGamesList();
+        }
+
+        function updateGamesList() {
+            const container = document.getElementById('gamesList');
+            container.innerHTML = '';
+
+            games.forEach((game, index) => {
+                const div = document.createElement('div');
+                div.className = 'game-entry';
+                div.innerHTML = `
+                    <input type="number" value="${game.week}" disabled>
+                    <input type="text" value="${game.opponent}" disabled>
+                    <input type="number" value="${game.yards}" disabled>
+                    <button class="remove-btn" onclick="removeGame(${index})">✕</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function calculateCI() {
+            if (currentQBData.length === 0) {
+                alert('Please upload CSV and select a quarterback first');
+                return;
+            }
+
+            const bettingLine = parseFloat(document.getElementById('bettingLine').value);
+            const window = document.getElementById('analysisWindow').value;
+
+            // Filter data based on window
+            let dataToAnalyze = [...currentQBData];
+            if (window !== 'all') {
+                dataToAnalyze = currentQBData.slice(-parseInt(window));
+            }
+
+            if (dataToAnalyze.length < 3) {
+                alert('Need at least 3 games for analysis');
+                return;
+            }
+
+            // Extract metrics
+            const yards = dataToAnalyze.map(g => parseFloat(g.passing_yards));
+            const accuracy = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.accuracy_pct || 0), 0) / dataToAnalyze.length;
+            const completion = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.comp_pct || 0), 0) / dataToAnalyze.length;
+            const bttRate = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.btt_rate || 0), 0) / dataToAnalyze.length;
+            const twpRate = dataToAnalyze.reduce((sum, g) => sum + parseFloat(g.twp_rate || 0), 0) / dataToAnalyze.length;
+
+            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine);
+            displayResults(result, dataToAnalyze[0].player, dataToAnalyze, bettingLine);
+        }
+
+        function calculateCIManual() {
+            const qbName = document.getElementById('qbName').value;
+            const accuracy = parseFloat(document.getElementById('accuracyPct').value);
+            const completion = parseFloat(document.getElementById('compPct').value);
+            const bttRate = parseFloat(document.getElementById('bttRate').value);
+            const twpRate = parseFloat(document.getElementById('twpRate').value);
+            const bettingLine = parseFloat(document.getElementById('bettingLineManual').value);
+
+            if (!qbName || games.length < 3) {
+                alert('Please enter QB name and at least 3 games');
+                return;
+            }
+
+            if (isNaN(accuracy) || isNaN(completion) || isNaN(bttRate) || isNaN(twpRate)) {
+                alert('Please enter all QB metrics');
+                return;
+            }
+
+            const yards = games.map(g => g.yards);
+            const result = performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine);
+            displayResults(result, qbName, games, bettingLine);
+        }
+
+        function performCICalculation(yards, accuracy, completion, bttRate, twpRate, bettingLine) {
+            // Calculate variance metrics
+            const mean = yards.reduce((a, b) => a + b, 0) / yards.length;
+            const variance = yards.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / yards.length;
+            const stdDev = Math.sqrt(variance);
+            const cv = (stdDev / mean) * 100; // Coefficient of Variation
+
+            // CI Formula: Base score minus variance penalty plus performance bonuses
+            let ciScore = 100 - cv; // Start with base consistency score
+
+            // Performance bonuses
+            ciScore += (accuracy - 65) * 0.3; // Accuracy bonus (above 65%)
+            ciScore += (completion - 60) * 0.2; // Completion bonus (above 60%)
+            ciScore += bttRate * 0.5; // Big time throw bonus
+
+            // Risk penalties
+            ciScore -= twpRate * 2; // Turnover penalty (weighted heavily)
+
+            // Normalize to 0-100
+            ciScore = Math.max(0, Math.min(100, ciScore));
+
+            // Determine risk tier
+            let riskTier, riskClass;
+            if (ciScore >= 80) {
+                riskTier = '🟩 Low Risk';
+                riskClass = 'low-risk';
+            } else if (ciScore >= 60) {
+                riskTier = '🟨 Moderate Risk';
+                riskClass = 'moderate-risk';
+            } else {
+                riskTier = '🟥 High Risk';
+                riskClass = 'high-risk';
+            }
+
+            // Betting recommendation
+            let recommendation, betAction, betClass;
+            if (ciScore >= 75) {
+                if (bettingLine && mean > bettingLine) {
+                    recommendation = `Strong consistency detected (CI: ${ciScore.toFixed(1)}). QB averaging ${mean.toFixed(1)} yards with low variance (±${stdDev.toFixed(1)}). Line set at ${bettingLine}.`;
+                    betAction = '✅ BET OVER';
+                    betClass = 'bet-over';
+                } else if (bettingLine && mean < bettingLine) {
+                    recommendation = `Strong consistency detected (CI: ${ciScore.toFixed(1)}). QB averaging ${mean.toFixed(1)} yards with low variance (±${stdDev.toFixed(1)}). Line set at ${bettingLine}.`;
+                    betAction = '✅ BET UNDER';
+                    betClass = 'bet-under';
+                } else {
+                    recommendation = `High consistency QB with reliable performance pattern.`;
+                    betAction = 'BETTABLE - Set Line Required';
+                    betClass = 'bet-over';
+                }
+            } else if (ciScore >= 60) {
+                recommendation = `Moderate volatility detected (CI: ${ciScore.toFixed(1)}). Standard deviation of ±${stdDev.toFixed(1)} yards indicates some inconsistency. Consider matchup and recent trends.`;
+                betAction = '⚠️ PROCEED WITH CAUTION';
+                betClass = 'caution';
+            } else {
+                recommendation = `High variance detected (CI: ${ciScore.toFixed(1)}). Standard deviation of ±${stdDev.toFixed(1)} yards (${cv.toFixed(1)}% CV) indicates unpredictable performance. Avoid betting on this QB until consistency improves.`;
+                betAction = '🚫 DO NOT BET';
+                betClass = 'no-bet';
+            }
+
+            return {
+                ciScore: ciScore.toFixed(1),
+                riskTier,
+                riskClass,
+                mean: mean.toFixed(1),
+                stdDev: stdDev.toFixed(1),
+                cv: cv.toFixed(1),
+                gamesCount: yards.length,
+                accuracy: accuracy.toFixed(1),
+                completion: completion.toFixed(1),
+                recommendation,
+                betAction,
+                betClass,
+                yards
+            };
+        }
+
+        function displayResults(result, qbName, gamesData, bettingLine) {
+            // Show results section
+            document.getElementById('resultsSection').classList.add('active');
+
+            // Populate values
+            document.getElementById('ciScoreValue').textContent = result.ciScore;
+            document.getElementById('ciScoreValue').className = `ci-score-value ${result.riskClass}`;
+            document.getElementById('riskBadge').textContent = result.riskTier;
+            document.getElementById('riskBadge').className = `risk-badge ${result.riskClass}`;
+            document.getElementById('qbNameDisplay').textContent = qbName;
+
+            document.getElementById('avgYards').textContent = result.mean;
+            document.getElementById('stdDev').textContent = result.stdDev;
+            document.getElementById('cv').textContent = result.cv + '%';
+            document.getElementById('gamesCount').textContent = result.gamesCount;
+            document.getElementById('accuracyDisplay').textContent = result.accuracy + '%';
+            document.getElementById('compDisplay').textContent = result.completion + '%';
+
+            document.getElementById('recommendationText').innerHTML = `<p>${result.recommendation}</p>`;
+            document.getElementById('betAction').textContent = result.betAction;
+            document.getElementById('betAction').className = `bet-action ${result.betClass}`;
+
+            // Create chart
+            createChart(result.yards, gamesData, parseFloat(result.mean), bettingLine);
+
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createChart(yards, gamesData, average, bettingLine) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+
+            // Destroy existing chart
+            if (chart) {
+                chart.destroy();
+            }
+
+            const labels = gamesData.map((g, i) => `W${g.week || i+1} vs ${g.opponent || '?'}`);
+
+            const datasets = [
+                {
+                    label: 'Passing Yards',
+                    data: yards,
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderColor: 'rgba(0, 212, 255, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(0, 212, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    tension: 0.3
+                },
+                {
+                    label: 'Average',
+                    data: Array(yards.length).fill(average),
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
+                }
+            ];
+
+            if (bettingLine) {
+                datasets.push({
+                    label: 'Betting Line',
+                    data: Array(yards.length).fill(bettingLine),
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    borderWidth: 2,
+                    borderDash: [10, 5],
+                    pointRadius: 0,
+                    fill: false
+                });
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#a8b2d1',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Game-by-Game Performance',
+                            color: '#00d4ff',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a8b2d1'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a8b2d1',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
