@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - QBCI™ Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0e27;
+            --secondary-bg: #141b3d;
+            --card-bg: #1a2145;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #a8b2d1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, #0f1433 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-brand h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-badge {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--accent);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            color: var(--accent);
+            font-size: 1.3rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        thead {
+            background: var(--secondary-bg);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:hover {
+            background: var(--secondary-bg);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            color: var(--accent);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <h1>QBCI™ Admin</h1>
+            <span class="admin-badge">Admin Panel</span>
+        </div>
+        <div class="nav-actions">
+            <span class="user-info">Logged in as: <span class="user-email" id="userEmail">Loading...</span></span>
+            <button class="btn btn-secondary btn-small" onclick="window.location.href='ci-calculator.html'">View Calculator</button>
+            <button class="btn btn-danger btn-small" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Games</div>
+                <div class="stat-value" id="totalGames">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Players</div>
+                <div class="stat-value" id="totalPlayers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Database Status</div>
+                <div class="stat-value" style="font-size: 1.5rem;" id="dbStatus">🟢 Connected</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('data-management')">Data Management</button>
+            <button class="tab" onclick="switchTab('bulk-upload')">Bulk Upload</button>
+            <button class="tab" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <!-- Data Management Tab -->
+        <div id="data-management" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>QB Game Data</h2>
+                    <button class="btn btn-success btn-small" onclick="openAddModal()">+ Add New Game</button>
+                </div>
+
+                <div id="alertBox" class="alert"></div>
+
+                <div class="input-group">
+                    <label>Filter by Player</label>
+                    <select id="playerFilter" onchange="loadData()">
+                        <option value="">All Players</option>
+                    </select>
+                </div>
+
+                <div id="dataTable">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p>Loading data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Upload Tab -->
+        <div id="bulk-upload" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bulk CSV Upload</h2>
+                </div>
+
+                <div id="uploadAlertBox" class="alert"></div>
+
+                <div class="file-upload-area" id="dropArea">
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                    <h3>Drop CSV file here or click to browse</h3>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                        Expected format: player, week, opponent, passing_yards, accuracy_pct, comp_pct, btt_rate, twp_rate, prop_line (optional), bet_result (optional)
+                    </p>
+                    <button class="btn" style="margin-top: 1rem;" onclick="document.getElementById('csvFile').click()">Select File</button>
+                </div>
+
+                <div id="uploadPreview" style="display: none; margin-top: 2rem;">
+                    <h3 style="color: var(--accent); margin-bottom: 1rem;">Preview</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        <span id="previewCount">0</span> records ready to upload
+                    </p>
+                    <button class="btn btn-success" onclick="uploadCSVData()">Upload to Database</button>
+                    <button class="btn btn-secondary" onclick="cancelUpload()" style="margin-left: 1rem;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Account Settings</h2>
+                </div>
+
+                <div id="settingsAlertBox" class="alert"></div>
+
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="settingsEmail" readonly style="background: var(--primary-bg);">
+                </div>
+
+                <div class="input-group">
+                    <label>User ID</label>
+                    <input type="text" id="userId" readonly style="background: var(--primary-bg);">
+                </div>
+
+                <div class="input-group">
+                    <label>Account Created</label>
+                    <input type="text" id="createdAt" readonly style="background: var(--primary-bg);">
+                </div>
+
+                <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">Danger Zone</h3>
+
+                <button class="btn btn-danger" onclick="confirmClearData()">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Game</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="gameForm" onsubmit="saveGame(event)">
+                <input type="hidden" id="gameId">
+
+                <div class="input-group">
+                    <label>Player Name *</label>
+                    <input type="text" id="player" required>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Week *</label>
+                        <input type="number" id="week" min="1" max="18" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Opponent *</label>
+                        <input type="text" id="opponent" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Passing Yards *</label>
+                        <input type="number" id="passing_yards" step="1" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Accuracy % *</label>
+                        <input type="number" id="accuracy_pct" step="0.1" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Completion % *</label>
+                        <input type="number" id="comp_pct" step="0.1" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>BTT Rate %</label>
+                        <input type="number" id="btt_rate" step="0.1" value="0">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>TWP Rate %</label>
+                        <input type="number" id="twp_rate" step="0.1" value="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Prop Line</label>
+                        <input type="number" id="prop_line" step="0.5">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Bet Result</label>
+                    <select id="bet_result">
+                        <option value="">Not Set</option>
+                        <option value="Over">Over</option>
+                        <option value="Under">Under</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-success">Save Game</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config/supabase-config.js"></script>
+
+    <script>
+        let client = null;
+        let currentUser = null;
+        let csvDataToUpload = null;
+
+        // Initialize
+        async function init() {
+            client = initSupabase();
+
+            if (!client) {
+                showAlert('Supabase not configured', 'error');
+                return;
+            }
+
+            // Check auth
+            const { session, error } = await SupabaseAuth.getSession();
+
+            if (error || !session) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('settingsEmail').value = currentUser.email;
+            document.getElementById('userId').value = currentUser.id;
+            document.getElementById('createdAt').value = new Date(currentUser.created_at).toLocaleString();
+
+            // Load data
+            await loadData();
+            await loadPlayers();
+        }
+
+        async function loadData() {
+            const playerFilter = document.getElementById('playerFilter').value;
+            const { data, error } = await SupabaseDB.getQBData(playerFilter || null);
+
+            if (error) {
+                showAlert('Error loading data: ' + error.message, 'error');
+                return;
+            }
+
+            // Update stats
+            document.getElementById('totalGames').textContent = data.length;
+            const uniquePlayers = [...new Set(data.map(g => g.player))];
+            document.getElementById('totalPlayers').textContent = uniquePlayers.length;
+
+            // Render table
+            if (data.length === 0) {
+                document.getElementById('dataTable').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p>No data found. Add some games to get started!</p>
+                    </div>
+                `;
+            } else {
+                renderDataTable(data);
+            }
+        }
+
+        function renderDataTable(data) {
+            const table = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Week</th>
+                            <th>Opponent</th>
+                            <th>Yards</th>
+                            <th>Accuracy</th>
+                            <th>Comp %</th>
+                            <th>Prop Line</th>
+                            <th>Result</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(game => `
+                            <tr>
+                                <td>${game.player}</td>
+                                <td>${game.week}</td>
+                                <td>${game.opponent}</td>
+                                <td>${game.passing_yards}</td>
+                                <td>${game.accuracy_pct}%</td>
+                                <td>${game.comp_pct}%</td>
+                                <td>${game.prop_line || 'N/A'}</td>
+                                <td>${game.bet_result || 'N/A'}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-small btn-secondary" onclick='editGame(${JSON.stringify(game)})'>Edit</button>
+                                        <button class="btn btn-small btn-danger" onclick="deleteGame('${game.id}')">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('dataTable').innerHTML = table;
+        }
+
+        async function loadPlayers() {
+            const { data } = await SupabaseDB.getPlayers();
+            const select = document.getElementById('playerFilter');
+
+            data.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player;
+                option.textContent = player;
+                select.appendChild(option);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Game';
+            document.getElementById('gameForm').reset();
+            document.getElementById('gameId').value = '';
+            document.getElementById('gameModal').classList.add('show');
+        }
+
+        function editGame(game) {
+            document.getElementById('modalTitle').textContent = 'Edit Game';
+            document.getElementById('gameId').value = game.id;
+            document.getElementById('player').value = game.player;
+            document.getElementById('week').value = game.week;
+            document.getElementById('opponent').value = game.opponent;
+            document.getElementById('passing_yards').value = game.passing_yards;
+            document.getElementById('accuracy_pct').value = game.accuracy_pct;
+            document.getElementById('comp_pct').value = game.comp_pct;
+            document.getElementById('btt_rate').value = game.btt_rate || 0;
+            document.getElementById('twp_rate').value = game.twp_rate || 0;
+            document.getElementById('prop_line').value = game.prop_line || '';
+            document.getElementById('bet_result').value = game.bet_result || '';
+            document.getElementById('gameModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('gameModal').classList.remove('show');
+        }
+
+        async function saveGame(event) {
+            event.preventDefault();
+
+            const gameData = {
+                player: document.getElementById('player').value,
+                week: parseInt(document.getElementById('week').value),
+                opponent: document.getElementById('opponent').value,
+                passing_yards: parseInt(document.getElementById('passing_yards').value),
+                accuracy_pct: parseFloat(document.getElementById('accuracy_pct').value),
+                comp_pct: parseFloat(document.getElementById('comp_pct').value),
+                btt_rate: parseFloat(document.getElementById('btt_rate').value),
+                twp_rate: parseFloat(document.getElementById('twp_rate').value),
+                prop_line: document.getElementById('prop_line').value ? parseFloat(document.getElementById('prop_line').value) : null,
+                bet_result: document.getElementById('bet_result').value || null
+            };
+
+            const gameId = document.getElementById('gameId').value;
+
+            let result;
+            if (gameId) {
+                result = await SupabaseDB.updateQBData(gameId, gameData);
+            } else {
+                result = await SupabaseDB.insertQBData(gameData);
+            }
+
+            if (result.error) {
+                showAlert('Error saving game: ' + result.error.message, 'error');
+                return;
+            }
+
+            showAlert(gameId ? 'Game updated successfully!' : 'Game added successfully!', 'success');
+            closeModal();
+            await loadData();
+        }
+
+        async function deleteGame(id) {
+            if (!confirm('Are you sure you want to delete this game?')) return;
+
+            const { error } = await SupabaseDB.deleteQBData(id);
+
+            if (error) {
+                showAlert('Error deleting game: ' + error.message, 'error');
+                return;
+            }
+
+            showAlert('Game deleted successfully!', 'success');
+            await loadData();
+        }
+
+        // CSV Upload
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                parseCSVForUpload(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSVForUpload(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            csvDataToUpload = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                csvDataToUpload.push(row);
+            }
+
+            document.getElementById('previewCount').textContent = csvDataToUpload.length;
+            document.getElementById('uploadPreview').style.display = 'block';
+            showUploadAlert(`Parsed ${csvDataToUpload.length} records successfully!`, 'success');
+        }
+
+        async function uploadCSVData() {
+            if (!csvDataToUpload) return;
+
+            // Convert to proper format
+            const formattedData = csvDataToUpload.map(row => ({
+                player: row.player,
+                week: parseInt(row.week),
+                opponent: row.opponent,
+                passing_yards: parseInt(row.passing_yards),
+                accuracy_pct: parseFloat(row.accuracy_pct),
+                comp_pct: parseFloat(row.comp_pct),
+                btt_rate: parseFloat(row.btt_rate || 0),
+                twp_rate: parseFloat(row.twp_rate || 0),
+                prop_line: row.prop_line ? parseFloat(row.prop_line) : null,
+                bet_result: row.bet_result || null
+            }));
+
+            const { error } = await SupabaseDB.bulkInsertCSV(formattedData);
+
+            if (error) {
+                showUploadAlert('Error uploading data: ' + error.message, 'error');
+                return;
+            }
+
+            showUploadAlert(`Successfully uploaded ${formattedData.length} records!`, 'success');
+            cancelUpload();
+            await loadData();
+            switchTab('data-management');
+        }
+
+        function cancelUpload() {
+            csvDataToUpload = null;
+            document.getElementById('csvFile').value = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+        }
+
+        async function confirmClearData() {
+            if (!confirm('⚠️ WARNING: This will delete ALL data from the database. This action cannot be undone. Are you sure?')) return;
+            if (!confirm('Last chance! Really delete everything?')) return;
+
+            // This would require admin privileges - implement based on your needs
+            showSettingsAlert('Feature requires additional permissions', 'info');
+        }
+
+        async function logout() {
+            await SupabaseAuth.signOut();
+            window.location.href = 'admin-login.html';
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => alertBox.className = 'alert', 5000);
+        }
+
+        function showUploadAlert(message, type) {
+            const alertBox = document.getElementById('uploadAlertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => alertBox.className = 'alert', 5000);
+        }
+
+        function showSettingsAlert(message, type) {
+            const alertBox = document.getElementById('settingsAlertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => alertBox.className = 'alert', 5000);
+        }
+
+        // Drag and drop
+        const dropArea = document.getElementById('dropArea');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+        });
+
+        dropArea.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('csvFile').files = files;
+                handleFileSelect({ target: { files } });
+            }
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
