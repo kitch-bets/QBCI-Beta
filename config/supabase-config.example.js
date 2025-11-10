@@ -4,6 +4,8 @@
 // 1. Copy this file to 'supabase-config.js' in the same directory
 // 2. Replace the placeholder values with your actual Supabase credentials
 // 3. Get your credentials from: https://app.supabase.com/project/YOUR_PROJECT/settings/api
+// 4. Add your Claude API key for OCR functionality
+// 5. Get Claude API key from: https://console.anthropic.com/settings/keys
 //
 // IMPORTANT: Never commit supabase-config.js to version control!
 // The .gitignore file is configured to exclude it automatically.
@@ -11,6 +13,14 @@
 const SUPABASE_CONFIG = {
     url: 'YOUR_SUPABASE_URL', // e.g., https://abcdefghijklmnop.supabase.co
     anonKey: 'YOUR_SUPABASE_ANON_KEY' // Your anon/public key (starts with eyJ...)
+};
+
+// Claude API Configuration for OCR (Optional but recommended)
+// Get your API key from: https://console.anthropic.com/settings/keys
+const CLAUDE_CONFIG = {
+    apiKey: 'YOUR_CLAUDE_API_KEY', // e.g., sk-ant-api03-xxx
+    model: 'claude-3-5-sonnet-20241022', // Claude 3.5 Sonnet with vision capabilities
+    useForOCR: true // Set to false to use Tesseract.js instead
 };
 
 // Initialize Supabase client (will be used across admin pages)
