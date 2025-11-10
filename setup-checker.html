@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Setup Checker - QBCI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #000000;
+            --secondary-bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --accent: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: #a8b2d1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, #0f1433 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--border);
+        }
+
+        .check-item.success {
+            border-left-color: var(--success);
+        }
+
+        .check-item.error {
+            border-left-color: var(--danger);
+        }
+
+        .check-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+            min-width: 30px;
+        }
+
+        .check-content {
+            flex: 1;
+        }
+
+        .check-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .check-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+        }
+
+        .config-form {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info-box h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background: var(--primary-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--primary-bg);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Supabase Setup Checker</h1>
+        <p class="subtitle">Let's get your admin panel working!</p>
+
+        <!-- Step 1: Check Configuration -->
+        <div class="card">
+            <h2 style="color: var(--accent); margin-bottom: 1rem;"><span class="step-number">1</span>Configuration Check</h2>
+            <div id="checkResults">
+                <button class="btn" onclick="runChecks()">Run Setup Check</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Quick Setup (if not configured) -->
+        <div class="card" id="setupCard">
+            <h2 style="color: var(--accent); margin-bottom: 1rem;"><span class="step-number">2</span>Quick Setup</h2>
+
+            <div class="info-box">
+                <h3>Haven't set up Supabase yet?</h3>
+                <p style="color: var(--text-secondary);">Follow these steps:</p>
+            </div>
+
+            <div style="margin: 1.5rem 0;">
+                <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Option A: Automatic Setup (Recommended)</h3>
+
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    After creating your Supabase project, enter your credentials below and we'll update the config file for you:
+                </p>
+
+                <div class="config-form">
+                    <div>
+                        <label>Supabase Project URL</label>
+                        <input type="text" id="supabaseUrl" placeholder="https://xxxxxxxxxxxxx.supabase.co">
+                        <small style="color: var(--text-secondary);">Get this from: Settings → API → Project URL</small>
+                    </div>
+
+                    <div>
+                        <label>Supabase Anon Key</label>
+                        <textarea id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+                        <small style="color: var(--text-secondary);">Get this from: Settings → API → Project API keys → anon/public</small>
+                    </div>
+
+                    <div>
+                        <button class="btn" onclick="saveConfig()">Save Configuration</button>
+                        <button class="btn btn-secondary" onclick="copyConfigCode()">Copy Config Code</button>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+            <div>
+                <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Option B: Manual Setup</h3>
+
+                <ol style="color: var(--text-secondary); line-height: 2; margin-left: 1.5rem;">
+                    <li>Go to <a href="https://supabase.com" target="_blank">https://supabase.com</a> and create a free account</li>
+                    <li>Create a new project (wait ~2 minutes for initialization)</li>
+                    <li>Go to Settings → API and copy your credentials</li>
+                    <li>Open <code style="background: var(--secondary-bg); padding: 0.2rem 0.5rem; border-radius: 3px;">config/supabase-config.js</code> in a text editor</li>
+                    <li>Replace <code style="background: var(--secondary-bg); padding: 0.2rem 0.5rem; border-radius: 3px;">YOUR_SUPABASE_URL</code> and <code style="background: var(--secondary-bg); padding: 0.2rem 0.5rem; border-radius: 3px;">YOUR_SUPABASE_ANON_KEY</code></li>
+                    <li>Save the file and refresh this page</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Step 3: Database Setup -->
+        <div class="card" id="databaseCard" class="hidden">
+            <h2 style="color: var(--accent); margin-bottom: 1rem;"><span class="step-number">3</span>Database Setup</h2>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                You need to create the database table. Copy the SQL below and run it in your Supabase SQL Editor:
+            </p>
+
+            <ol style="color: var(--text-secondary); line-height: 2; margin: 1rem 0 1rem 1.5rem;">
+                <li>Go to your Supabase project dashboard</li>
+                <li>Click "SQL Editor" in the left sidebar</li>
+                <li>Click "+ New Query"</li>
+                <li>Copy and paste the SQL below</li>
+                <li>Click "Run" or press Ctrl+Enter</li>
+            </ol>
+
+            <button class="btn btn-secondary" onclick="copySQL()">📋 Copy SQL</button>
+
+            <div class="code-block" id="sqlCode">
+CREATE TABLE qb_weekly_data (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    player TEXT NOT NULL,
+    week INTEGER NOT NULL,
+    opponent TEXT NOT NULL,
+    passing_yards INTEGER NOT NULL,
+    accuracy_pct DECIMAL(5,2) NOT NULL,
+    comp_pct DECIMAL(5,2) NOT NULL,
+    btt_rate DECIMAL(5,2) DEFAULT 0,
+    twp_rate DECIMAL(5,2) DEFAULT 0,
+    prop_line DECIMAL(6,2),
+    bet_result TEXT CHECK (bet_result IN ('Over', 'Under', NULL)),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_qb_weekly_player ON qb_weekly_data(player);
+CREATE INDEX idx_qb_weekly_week ON qb_weekly_data(week);
+
+ALTER TABLE qb_weekly_data ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated users to read data"
+    ON qb_weekly_data FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow authenticated users to insert data"
+    ON qb_weekly_data FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated users to update data"
+    ON qb_weekly_data FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Allow authenticated users to delete data"
+    ON qb_weekly_data FOR DELETE TO authenticated USING (true);
+            </div>
+        </div>
+
+        <!-- Step 4: Create User -->
+        <div class="card" id="userCard" class="hidden">
+            <h2 style="color: var(--accent); margin-bottom: 1rem;"><span class="step-number">4</span>Create Admin User</h2>
+
+            <ol style="color: var(--text-secondary); line-height: 2; margin-left: 1.5rem;">
+                <li>In Supabase, go to Authentication → Users</li>
+                <li>Click "Add user" → "Create new user"</li>
+                <li>Enter your email and password</li>
+                <li><strong>Important:</strong> Check "Auto Confirm User" ✅</li>
+                <li>Click "Create user"</li>
+            </ol>
+
+            <div class="info-box" style="margin-top: 1.5rem;">
+                <h3>Test Your Login</h3>
+                <p style="color: var(--text-secondary); margin: 0.5rem 0;">
+                    Once you've created the user, try logging in:
+                </p>
+                <button class="btn" onclick="window.location.href='admin-login.html'" style="margin-top: 0.5rem;">
+                    Go to Login Page →
+                </button>
+            </div>
+        </div>
+
+        <!-- Back to Home -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html">← Back to Home</a> |
+            <a href="SUPABASE_SETUP_GUIDE.md" target="_blank">Full Setup Guide</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config/supabase-config.js"></script>
+
+    <script>
+        async function runChecks() {
+            const resultsDiv = document.getElementById('checkResults');
+            let html = '';
+            let allChecksPass = true;
+
+            // Check 1: Config file exists and is loaded
+            if (typeof SUPABASE_CONFIG === 'undefined') {
+                html += createCheckItem('error', '❌', 'Config Not Loaded', 'The supabase-config.js file is not loading properly.');
+                allChecksPass = false;
+            } else {
+                html += createCheckItem('success', '✅', 'Config File Loaded', 'Configuration file is present.');
+            }
+
+            // Check 2: Config values set
+            if (SUPABASE_CONFIG && (SUPABASE_CONFIG.url === 'YOUR_SUPABASE_URL' || !SUPABASE_CONFIG.url.includes('supabase.co'))) {
+                html += createCheckItem('error', '❌', 'Config Not Set', 'Please add your Supabase URL and API key below.');
+                allChecksPass = false;
+            } else if (SUPABASE_CONFIG) {
+                html += createCheckItem('success', '✅', 'Credentials Configured', 'Supabase URL and key are set.');
+            }
+
+            // Check 3: Supabase library loaded
+            if (typeof supabase === 'undefined') {
+                html += createCheckItem('error', '❌', 'Supabase Library Missing', 'The Supabase JavaScript library failed to load.');
+                allChecksPass = false;
+            } else {
+                html += createCheckItem('success', '✅', 'Supabase Library Loaded', 'JavaScript library is available.');
+            }
+
+            // Check 4: Can connect to Supabase
+            if (SUPABASE_CONFIG && SUPABASE_CONFIG.url !== 'YOUR_SUPABASE_URL') {
+                try {
+                    const client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                    const { data, error } = await client.from('qb_weekly_data').select('count');
+
+                    if (error) {
+                        if (error.message.includes('relation') || error.message.includes('does not exist')) {
+                            html += createCheckItem('warning', '⚠️', 'Database Table Missing', 'Table needs to be created. See Step 3 below.');
+                            document.getElementById('databaseCard').classList.remove('hidden');
+                        } else {
+                            html += createCheckItem('error', '❌', 'Connection Error', error.message);
+                        }
+                        allChecksPass = false;
+                    } else {
+                        html += createCheckItem('success', '✅', 'Database Connected', 'Successfully connected to Supabase database.');
+                        document.getElementById('userCard').classList.remove('hidden');
+                    }
+                } catch (e) {
+                    html += createCheckItem('error', '❌', 'Connection Failed', e.message);
+                    allChecksPass = false;
+                }
+            }
+
+            // Show appropriate cards
+            if (!allChecksPass && SUPABASE_CONFIG.url === 'YOUR_SUPABASE_URL') {
+                document.getElementById('setupCard').style.display = 'block';
+            }
+
+            // Add summary
+            if (allChecksPass) {
+                html += `
+                    <div class="info-box" style="margin-top: 1rem;">
+                        <h3>✅ All Checks Passed!</h3>
+                        <p style="color: var(--text-secondary); margin: 0.5rem 0;">
+                            Your setup is complete. If you haven't created a user yet, see Step 4 below.
+                        </p>
+                        <button class="btn" onclick="window.location.href='admin-login.html'" style="margin-top: 0.5rem;">
+                            Go to Login Page →
+                        </button>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function createCheckItem(status, icon, title, desc) {
+            return `
+                <div class="check-item ${status}">
+                    <div class="status-icon">${icon}</div>
+                    <div class="check-content">
+                        <div class="check-title">${title}</div>
+                        <div class="check-desc">${desc}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveConfig() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+
+            if (!url || !key) {
+                alert('Please enter both URL and API key');
+                return;
+            }
+
+            if (!url.includes('supabase.co')) {
+                alert('Invalid Supabase URL. Should look like: https://xxxxx.supabase.co');
+                return;
+            }
+
+            const configCode = `// Supabase Configuration
+const SUPABASE_CONFIG = {
+    url: '${url}',
+    anonKey: '${key}'
+};
+
+// [Rest of the config file content remains the same]`;
+
+            alert('⚠️ Manual Step Required:\n\n1. Copy the config code using the "Copy Config Code" button\n2. Open config/supabase-config.js in a text editor\n3. Replace the SUPABASE_CONFIG section with the copied code\n4. Save the file\n5. Refresh this page and run the check again');
+        }
+
+        function copyConfigCode() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+
+            if (!url || !key) {
+                alert('Please enter both URL and API key first');
+                return;
+            }
+
+            const configCode = `const SUPABASE_CONFIG = {
+    url: '${url}',
+    anonKey: '${key}'
+};`;
+
+            navigator.clipboard.writeText(configCode).then(() => {
+                alert('✅ Config code copied to clipboard!\n\nNow:\n1. Open config/supabase-config.js\n2. Replace the SUPABASE_CONFIG section\n3. Save and refresh this page');
+            });
+        }
+
+        function copySQL() {
+            const sql = document.getElementById('sqlCode').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('✅ SQL copied to clipboard!\n\nNow paste it into Supabase SQL Editor and click Run.');
+            });
+        }
+
+        // Auto-run checks on load
+        if (typeof SUPABASE_CONFIG !== 'undefined') {
+            setTimeout(runChecks, 500);
+        }
+    </script>
+</body>
+</html>
