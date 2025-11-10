@@ -11,8 +11,8 @@
 // The .gitignore file is configured to exclude it automatically.
 
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL', // e.g., https://abcdefghijklmnop.supabase.co
-    anonKey: 'YOUR_SUPABASE_ANON_KEY' // Your anon/public key (starts with eyJ...)
+    url: 'https://zaljfpagjzndgudnyggu.supabase.co', // e.g., https://abcdefghijklmnop.supabase.co
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphbGpmcGFnanpuZGd1ZG55Z2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjgwNzEsImV4cCI6MjA3Nzg0NDA3MX0.U1nOZKrLzuAinXTsQ3Dp5W5zajSRPLrvusVbRDf7v6s' // Your anon/public key (starts with eyJ...)
 };
 
 // Claude API Configuration for OCR (Optional but recommended)
