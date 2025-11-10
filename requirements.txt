@@ -1,0 +1,15 @@
+# Python dependencies for PFF Emulator Watcher
+
+# HTTP requests
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Note: These are already installed on your system
+# pillow>=11.2.0
+# opencv-python>=4.11.0
+# pytesseract>=0.3.13
+
+# ADB is handled via system command (Android Platform Tools)
+# Make sure adb is in your PATH

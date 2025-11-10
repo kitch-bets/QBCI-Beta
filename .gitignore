@@ -29,3 +29,19 @@ npm-debug.log*
 # Temporary files
 *.tmp
 .cache/
+
+# PFF Emulator Watcher
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
