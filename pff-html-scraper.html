@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFF HTML Scraper - QBCI™ Analytics | Avantus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #000000;
+            --secondary-bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --accent: #ffffff;
+            --accent-secondary: #888888;
+            --accent-glow: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-brand h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--accent);
+            color: #000000;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .output-section {
+            margin-top: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .table-preview {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--secondary-bg);
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .message.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .instructions {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .instructions h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .instructions ol {
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .instructions code {
+            background: var(--card-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-brand">
+            <h1>PFF HTML Scraper</h1>
+        </div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="instructions">
+            <h3>📋 How to Use</h3>
+            <ol>
+                <li>Navigate to a PFF player page (e.g., Matthew Stafford's passing grades)</li>
+                <li>Right-click and select <code>Save As...</code> → <code>Webpage, HTML Only</code></li>
+                <li>Upload the saved HTML file using the upload area below</li>
+                <li>The scraper will automatically extract the passing grades table</li>
+                <li>Download the CSV file or copy the data to use elsewhere</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Upload PFF Player Page</h2>
+                <p>Select or drag & drop a saved HTML file from PFF</p>
+            </div>
+
+            <div class="file-upload-area" id="dropZone">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click to browse or drag HTML file here</div>
+                <div class="upload-hint">Supports .html and .htm files</div>
+            </div>
+
+            <input type="file" id="fileInput" accept=".html,.htm">
+
+            <div id="message" class="message"></div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Rows Found</div>
+                <div class="stat-value" id="rowCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Columns</div>
+                <div class="stat-value" id="columnCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Player</div>
+                <div class="stat-value" id="playerName" style="font-size: 1.2rem;">-</div>
+            </div>
+        </div>
+
+        <div class="card" id="outputCard" style="display: none;">
+            <div class="card-header">
+                <h2>Preview & Export</h2>
+                <p>Table data extracted from the HTML file</p>
+            </div>
+
+            <div class="table-preview" id="tablePreview"></div>
+
+            <div class="output-section">
+                <label for="csvOutput">CSV Output (Tab-separated)</label>
+                <textarea id="csvOutput" readonly></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-success" id="downloadBtn">📥 Download CSV</button>
+                <button class="btn" id="copyBtn">📋 Copy to Clipboard</button>
+                <button class="btn btn-secondary" id="resetBtn">🔄 Upload Another File</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const message = document.getElementById('message');
+        const statsGrid = document.getElementById('statsGrid');
+        const outputCard = document.getElementById('outputCard');
+        const csvOutput = document.getElementById('csvOutput');
+        const tablePreview = document.getElementById('tablePreview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let currentData = null;
+
+        // File upload handling
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+                showMessage('Please upload an HTML file (.html or .htm)', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const htmlContent = e.target.result;
+                    const data = parseHTML(htmlContent);
+
+                    if (data.rows.length === 0) {
+                        showMessage('No table data found in the HTML file. Make sure it contains a passing grades table.', 'warning');
+                        return;
+                    }
+
+                    currentData = data;
+                    displayResults(data);
+                    showMessage(`Successfully extracted ${data.rows.length} rows!`, 'success');
+                } catch (error) {
+                    showMessage(`Error parsing HTML: ${error.message}`, 'error');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseHTML(htmlText) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+
+            // Try to find a heading for passing grades
+            let heading = null;
+            const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            for (const h of headings) {
+                const text = h.textContent.toLowerCase();
+                if (text.includes('passing') && text.includes('grade')) {
+                    heading = h;
+                    break;
+                }
+            }
+
+            // Find the table
+            let table = null;
+            if (heading) {
+                // Find the next table after the heading
+                let el = heading.nextElementSibling;
+                while (el) {
+                    if (el.tagName === 'TABLE') {
+                        table = el;
+                        break;
+                    }
+                    const nestedTable = el.querySelector('table');
+                    if (nestedTable) {
+                        table = nestedTable;
+                        break;
+                    }
+                    el = el.nextElementSibling;
+                }
+            }
+
+            // Fallback to first table
+            if (!table) {
+                table = doc.querySelector('table');
+            }
+
+            if (!table) {
+                return { headers: [], rows: [], playerName: 'Unknown' };
+            }
+
+            // Extract headers
+            let headers = [];
+            const thead = table.querySelector('thead');
+            if (thead) {
+                const headerCells = thead.querySelectorAll('th');
+                headers = Array.from(headerCells).map(th => th.textContent.trim());
+            } else {
+                // Try first row
+                const firstRow = table.querySelector('tr');
+                if (firstRow) {
+                    const cells = firstRow.querySelectorAll('th, td');
+                    headers = Array.from(cells).map(cell => cell.textContent.trim());
+                }
+            }
+
+            // Extract data rows
+            const rows = [];
+            const tbody = table.querySelector('tbody');
+            const dataRows = tbody ? tbody.querySelectorAll('tr') : table.querySelectorAll('tr');
+
+            let startIndex = thead ? 0 : 1; // Skip first row if it's headers
+            for (let i = startIndex; i < dataRows.length; i++) {
+                const cells = dataRows[i].querySelectorAll('td, th');
+                if (cells.length === 0) continue;
+
+                const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+                if (rowData.length === headers.length) {
+                    rows.push(rowData);
+                }
+            }
+
+            // Try to extract player name from title or h1
+            let playerName = 'Unknown';
+            const titleMatch = doc.title.match(/^([^|]+)/);
+            if (titleMatch) {
+                playerName = titleMatch[1].trim();
+            } else {
+                const h1 = doc.querySelector('h1');
+                if (h1) {
+                    playerName = h1.textContent.trim();
+                }
+            }
+
+            return { headers, rows, playerName };
+        }
+
+        function displayResults(data) {
+            // Update stats
+            document.getElementById('rowCount').textContent = data.rows.length;
+            document.getElementById('columnCount').textContent = data.headers.length;
+            document.getElementById('playerName').textContent = data.playerName;
+            statsGrid.style.display = 'grid';
+
+            // Generate CSV
+            const csvLines = [data.headers.join(',')];
+            data.rows.forEach(row => {
+                csvLines.push(row.map(cell => {
+                    // Escape cells with commas
+                    if (cell.includes(',') || cell.includes('"')) {
+                        return `"${cell.replace(/"/g, '""')}"`;
+                    }
+                    return cell;
+                }).join(','));
+            });
+            const csvText = csvLines.join('\n');
+            csvOutput.value = csvText;
+
+            // Generate table preview
+            let tableHTML = '<table><thead><tr>';
+            data.headers.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+            data.rows.forEach(row => {
+                tableHTML += '<tr>';
+                row.forEach(cell => {
+                    tableHTML += `<td>${cell}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</tbody></table>';
+            tablePreview.innerHTML = tableHTML;
+
+            outputCard.style.display = 'block';
+        }
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+
+        // Download CSV
+        downloadBtn.addEventListener('click', () => {
+            if (!currentData) return;
+
+            const blob = new Blob([csvOutput.value], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentData.playerName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_passing_grades.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showMessage('CSV file downloaded successfully!', 'success');
+        });
+
+        // Copy to clipboard
+        copyBtn.addEventListener('click', () => {
+            csvOutput.select();
+            document.execCommand('copy');
+            showMessage('CSV data copied to clipboard!', 'success');
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            currentData = null;
+            statsGrid.style.display = 'none';
+            outputCard.style.display = 'none';
+            message.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
