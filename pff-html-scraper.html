@@ -273,6 +273,40 @@
             margin-top: 1rem;
         }
 
+        .debug-console {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .debug-line {
+            color: var(--text-secondary);
+            margin: 0.25rem 0;
+        }
+
+        .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .debug-header h3 {
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .btn-clear {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
         .instructions {
             background: var(--secondary-bg);
             border: 1px solid var(--border);
@@ -356,6 +390,14 @@
             <input type="file" id="fileInput" accept=".html,.htm">
 
             <div id="message" class="message"></div>
+
+            <div class="debug-console" id="debugConsole" style="display: none;">
+                <div class="debug-header">
+                    <h3>Debug Log</h3>
+                    <button class="btn btn-secondary btn-clear" onclick="clearDebugLog()">Clear</button>
+                </div>
+                <div id="debugOutput"></div>
+            </div>
         </div>
 
         <div class="stats-grid" id="statsGrid" style="display: none;">
@@ -405,8 +447,27 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const copyBtn = document.getElementById('copyBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const debugConsole = document.getElementById('debugConsole');
+        const debugOutput = document.getElementById('debugOutput');
 
         let currentData = null;
+
+        // Intercept console.log for debugging
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            debugConsole.style.display = 'block';
+            const line = document.createElement('div');
+            line.className = 'debug-line';
+            line.textContent = args.join(' ');
+            debugOutput.appendChild(line);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        };
+
+        function clearDebugLog() {
+            debugOutput.innerHTML = '';
+            debugConsole.style.display = 'none';
+        }
 
         // File upload handling
         dropZone.addEventListener('click', () => fileInput.click());
@@ -436,19 +497,27 @@
         });
 
         function handleFile(file) {
+            console.log('File selected:', file.name);
+
             if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
                 showMessage('Please upload an HTML file (.html or .htm)', 'error');
                 return;
             }
 
+            showMessage('Reading file...', 'warning');
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
+                    console.log('File loaded, size:', e.target.result.length, 'bytes');
                     const htmlContent = e.target.result;
                     const data = parseHTML(htmlContent);
 
+                    console.log('Parse result:', data);
+
                     if (data.rows.length === 0) {
-                        showMessage('No table data found in the HTML file. Make sure it contains a passing grades table.', 'warning');
+                        showMessage('No table data found in the HTML file. Make sure it contains a table with data.', 'warning');
+                        console.log('Debug: Found headers:', data.headers);
                         return;
                     }
 
@@ -457,23 +526,34 @@
                     showMessage(`Successfully extracted ${data.rows.length} rows!`, 'success');
                 } catch (error) {
                     showMessage(`Error parsing HTML: ${error.message}`, 'error');
-                    console.error(error);
+                    console.error('Parse error:', error);
                 }
             };
+
+            reader.onerror = (e) => {
+                showMessage('Error reading file', 'error');
+                console.error('File read error:', e);
+            };
+
             reader.readAsText(file);
         }
 
         function parseHTML(htmlText) {
+            console.log('Starting HTML parse...');
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlText, 'text/html');
 
             // Try to find a heading for passing grades
             let heading = null;
             const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            console.log('Found', headings.length, 'headings');
+
             for (const h of headings) {
                 const text = h.textContent.toLowerCase();
+                console.log('Checking heading:', text.substring(0, 50));
                 if (text.includes('passing') && text.includes('grade')) {
                     heading = h;
+                    console.log('Found passing grades heading!');
                     break;
                 }
             }
@@ -500,11 +580,17 @@
             // Fallback to first table
             if (!table) {
                 table = doc.querySelector('table');
+                console.log('Using first table (fallback)');
             }
 
             if (!table) {
+                console.log('No tables found in document!');
+                const allTables = doc.querySelectorAll('table');
+                console.log('Total tables in doc:', allTables.length);
                 return { headers: [], rows: [], playerName: 'Unknown' };
             }
+
+            console.log('Found table, extracting data...');
 
             // Extract headers
             let headers = [];
@@ -512,12 +598,14 @@
             if (thead) {
                 const headerCells = thead.querySelectorAll('th');
                 headers = Array.from(headerCells).map(th => th.textContent.trim());
+                console.log('Found thead with', headers.length, 'headers:', headers);
             } else {
                 // Try first row
                 const firstRow = table.querySelector('tr');
                 if (firstRow) {
                     const cells = firstRow.querySelectorAll('th, td');
                     headers = Array.from(cells).map(cell => cell.textContent.trim());
+                    console.log('Using first row as headers:', headers);
                 }
             }
 
@@ -525,6 +613,7 @@
             const rows = [];
             const tbody = table.querySelector('tbody');
             const dataRows = tbody ? tbody.querySelectorAll('tr') : table.querySelectorAll('tr');
+            console.log('Found', dataRows.length, 'data rows');
 
             let startIndex = thead ? 0 : 1; // Skip first row if it's headers
             for (let i = startIndex; i < dataRows.length; i++) {
@@ -532,10 +621,27 @@
                 if (cells.length === 0) continue;
 
                 const rowData = Array.from(cells).map(cell => cell.textContent.trim());
-                if (rowData.length === headers.length) {
+                console.log('Row', i, ':', rowData.length, 'cells');
+
+                // More flexible: accept rows with similar length (within 2 columns)
+                if (headers.length === 0 || Math.abs(rowData.length - headers.length) <= 2) {
+                    // If headers are missing, create them
+                    if (headers.length === 0) {
+                        headers = rowData.map((_, idx) => `Column ${idx + 1}`);
+                    }
+                    // Pad row if needed
+                    while (rowData.length < headers.length) {
+                        rowData.push('');
+                    }
+                    // Trim row if needed
+                    if (rowData.length > headers.length) {
+                        rowData.length = headers.length;
+                    }
                     rows.push(rowData);
                 }
             }
+
+            console.log('Extracted', rows.length, 'valid rows');
 
             // Try to extract player name from title or h1
             let playerName = 'Unknown';
@@ -548,6 +654,7 @@
                     playerName = h1.textContent.trim();
                 }
             }
+            console.log('Player name:', playerName);
 
             return { headers, rows, playerName };
         }
